@@ -1,0 +1,23 @@
+<!-- Navigation-->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
+  <div class="container px-4">
+    {% if session['authenticated_teacher'] == False %}
+      <a class="navbar-brand" href="{{url_for('show_home')}}">Go home</a>
+    {% endif %}
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ms-auto">
+            {% if session['authenticated_teacher'] %}
+                <li class="nav-item"><a class="nav-link" href="{{url_for('show_all')}}">Studenten</a></li>
+                {% if session['is_admin'] == True %}
+                    <li class="nav-item"><a class="nav-link" href="{{url_for('show_all_teachers')}}">Leraren</a></li>
+                {% endif %}
+                <li class="nav-item"><a class="nav-link" href="{{url_for('logout')}}">logout</a></li>
+            {% else %}
+                <li class="nav-item"><a class="nav-link" href="{{url_for('vragenlijst')}}">vragenlijst</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{url_for('login')}}">login</a></li>
+            {% endif %}
+          </ul>
+      </div>
+  </div>
+</nav>

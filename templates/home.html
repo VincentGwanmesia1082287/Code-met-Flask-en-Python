@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}
+Test-Correct | Home
+{% endblock %}
+{% block content %}
+        <!-- Header-->
+        <header class="bg-primary bg-gradient text-white">
+            <div class="container px-4 text-center">
+                <h1 class="fw-bolder">Welkom bij de vragen test site.</h1>
+                <a class="btn btn-lg btn-light" href="{{url_for('vragenlijst')}}">Ga direct naar de vragenlijst!!</a>
+            </div>
+        </header>
+        <!-- About section-->
+        <section id="about">
+            <div class="container px-4">
+            <div class="row gx-4 justify-content-center">
+                <div class="col-lg-8">
+                <h2>Over deze pagina</h2>
+                <p class="lead">Welkom op de homepagina van onze vragenlijst website</p>
+                <p>Hier vind je een verscheidenheid aan vragenlijsten over verschillende onderwerpen.</p>
+                <ul>
+                    <li>Uitgebreid aanbod van vragenlijsten om uit te kiezen</li>
+                    <li>Makkelijke navigatie om de gewenste vragenlijst te vinden</li>
+                    <li>Veilig en gebruiksvriendelijk platform</li>
+                </ul>
+                <a class="btn btn-lg btn-primary" href="{{url_for('vragenlijst')}}">Bekijk Vragenlijsten</a>
+                </div>
+            </div>
+            </div>
+        </section>
+{% endblock %}

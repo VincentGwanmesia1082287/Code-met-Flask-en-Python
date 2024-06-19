@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}
+Test-Correct | Home
+{% endblock %}
+{% block content %}
+        <!-- Header-->
+        <header class="bg-primary bg-gradient text-white">
+            <div class="container px-4 text-center">
+                <h1 class="fw-bolder">Welcome</h1>
+                <form id="NewModal" method="POST" name="send_studentnummer">
+                    <input class="w3-input" type="hidden" id="action_type" name="action_type" value="add">
+                    <input class="w3-input" type="hidden" id="teacher_id" name="teacher_id" value="">
+                    <p>
+                    <label>E-mail</label>
+                    <input class="w3-input" type="email" id="email" name="email" placeholder="Vul je E-mail in" value=""></p>
+                    <p>
+                    <label>Naam</label>
+                    <input class="w3-input" type="text" id="naam" name="naam" placeholder="Vul je naam in" value=""></p>
+                    <p>
+                    <label>Wachtwoord</label>
+                    <input class="w3-input" type="password" id="password" name="password" placeholder="Vul je wachtwoord in" value=""></p>
+                    <p id="admin_check">
+                    <label>Is admin</label>
+                    <input class="w3-input" type="checkbox" id="is_admin" name="is_admin"></p>
+                    <button class=" btn btn-select btn-lg btn-light" id="SaveModal">Opslaan</button>
+                </form>
+                <!--<a class="btn btn-lg btn-light" href="#about">Start scrolling!</a>-->
+            </div>
+        </header>
+        <!-- About section-->
+        <section id="about">
+            <div class="container px-4">
+                <div class="row gx-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" scope="row">Naam</th>
+                                    <th class="text-center" scope="row">Email</th>
+                                    <th class="text-center" scope="row">Actief sinds</th>
+                                    <th class="text-center" scope="row">Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in teacher_list %}
+                                <tr name="test">
+                                    <td data-label="id" class="text-center p-2" scope="row"><abbr title="{{ teacher.Naam}}">{{ teacher.Naam}}</abbr></td>
+                                    <td data-label="id" class="text-center p-2" scope="row"><abbr title="{{ teacher.Email}}">{{ teacher.Email}}</abbr></td>
+                                    <td data-label="id" class="text-center p-2" scope="row"><abbr title="{{ teacher.Actief_sinds}}">{{ teacher.Actief_sinds}}</abbr></td>
+                                    {% if teacher.Is_admin == 1 %}
+                                        <td data-label="id" class="text-center p-2" scope="row"><abbr title="Ja">Ja</abbr></td>
+                                    {% else %}
+                                        <td data-label="id" class="text-center p-2" scope="row"><abbr title="Nee">Nee</abbr></td>
+                                    {% endif %}
+                                    <td data-label="id" class="text-center p-2" scope="row"><button class="delete btn btn-lg btn-light" value="{{ teacher.ID}}"><i class="fa-solid fa-trash"></i></button></td>
+                                    <td data-label="id" class="text-center p-2" scope="row"><button class="edit btn btn-lg btn-light" value="{{ teacher.ID}}"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% if total_pages > 1 %}
+                            <div class="pagination">
+                                {% for page_number in range(1, total_pages + 1) %}
+                                {% if page_number == active_page %} <!--if the page number is the same as the active page -->
+                                <span class="current-page">{{ page_number }}</span> <!--then add a class to the span -->
+                                {% else %}
+                                <a href="{{ url_for('show_all_teachers', page=page_number) }}">{{ page_number }}</a>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+<script>
+$(document).ready(function(){
+    $("#SaveModal").click(function (event) {
+        console.log($('#NewModal').serializeArray());	
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('show_all_teachers')}}",
+            data: $('#NewModal').serializeArray(),
+            success: function(response) {
+                alert(response.output);
+                location.reload();
+            },
+                error: function (jqXHR, exception) {
+                alert(jqXHR.statusText);
+            }
+        });
+    });
+
+    $(".edit").click(function (event) {
+        var value = $(this).val();
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        $.ajax({
+            type: "POST",
+            url: "{{url_for('show_all_teachers')}}",
+            data: {
+                'type': 'get_for_edit',
+                'teacher_id': value
+            },	
+            success: function(response) {   
+                console.log(response.output);
+                id = response.output[0]['ID'];
+                email = response.output[0]['Email'];
+                naam = response.output[0]['Naam'];
+                is_admin = response.output[0]['Is_admin'];
+
+                $("#action_type").val('edit');
+                $("#teacher_id").val(id);
+                $("#email").val(email);
+                $("#naam").val(naam);
+                if (is_admin == 1) {
+                    $("#is_admin").prop('checked', true);
+                    $("#admin_check").hide();
+                } else {
+                    $("#admin_check").show();
+                    $("#is_admin").prop('checked', false);
+                }
+                $("#password").hide();
+            },
+                error: function (jqXHR, exception) {
+                alert(jqXHR.statusText);
+            }
+        });
+    });
+
+    $(".delete").click(function (event) {
+        var value = $(this).val();
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        
+        if (confirm('Weet u zeker dat u deze leraar wilt verwijderen?')) {
+            // Save it!
+                console.log(value);
+                $.ajax({
+                type: "POST",
+                url: "{{url_for('show_all_teachers')}}",
+                data: {
+                    'action_type': 'delete',
+                    'teacher_id': value
+                },	
+                success: function(response) { 
+                    console.log(response.output);  
+                    location.reload();
+                },
+                    error: function (jqXHR, exception) {
+                    alert(jqXHR.statusText);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block title %}
+Test-Correct | Home
+{% endblock %}
+{% block content %}
+        <!-- Header-->
+        <header class="bg-primary bg-gradient text-white">
+            <div class="container px-4 text-center">
+                <h1 class="fw-bolder">Welcome to Scrolling Nav</h1>
+                <form id="NewModal" method="POST" name="send_studentnummer">
+                    <p>
+                    <label>studenten nummer</label>
+                    <input class="w3-input" type="number" name="studentennummer" placeholder="Vul je studentennummer in"></p>
+                    <button class=" btn btn-select btn-lg btn-light" id="SaveModal">Opslaan</button>
+                </form>
+                {% if session['studentennummer'] %}
+                    <input type="hidden" id="studentnummer" value="{{ session['studentennummer'] }}">
+                    <h2 class="lead mb-4">Welkom {{ session['naam'] }} Van Klas: {{ session['klas'] }}</h2>                                 
+                {% endif %}
+                <!--<a class="btn btn-lg btn-light" href="#about">Start scrolling!</a>-->
+            </div>
+        </header>
+        <!-- About section-->
+        {% if session['studentennummer'] %}
+            <section id="bezig">
+                
+                <div class="container px-4">
+                    <div class="row gx-4 justify-content-center">
+                        <div class="col-lg-8">
+                            <ul>
+                                <h1 class="fw-bolder" id="question"></h1>
+                                <input type="hidden" id="last_completed_statement" value="{{ session['last_completed_statement'] }}">
+                                <button class="optie button" type="button" value="" id="optie1"></button> 
+                                <button class="optie button" style="--c:#E95A49" type="button" value="" id="optie2"></button> 
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="klaar">
+                
+                <div class="container px-4">
+                    <div class="row gx-4 justify-content-center">
+                        <div class="col-lg-8">
+                            <ul>
+                                <h1 class="fw-bolder" id="question">Klaar met uw test</h1>
+                                <p id="code">test</p>
+                                <button class=" btn btn-lg btn-light" id="Opnieuw">Neem de test opnieuw</button>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        {% else %}
+            <section>
+                    
+                <div class="container px-4">
+                    <div class="row gx-4 justify-content-center">
+                        <div class="col-lg-8">
+                            <ul>
+                                <b>Eerst inloggen graag</b>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+<script>
+    $(document).ready(function(){
+        $("#SaveModal").click(function (event) {
+            console.log($('#NewModal').serializeArray());	
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            $.ajax({
+                type: "POST",
+                url: "{{url_for('vragenlijst')}}",
+                data: $('#NewModal').serializeArray(),
+                success: function(response) {
+                    if (response.output[0] == false) {
+                        console.log(response.output)
+                        alert("Studentnummer bestaat niet");
+                        location.reload();
+                    } else {
+                        statementnumber = response.output[1] - 1;
+                        location.reload();
+                    }
+                },
+                    error: function (jqXHR, exception) {
+                    alert(jqXHR.statusText);
+                }
+            });
+        });
+
+        let counter = $("#last_completed_statement").val();
+        var allQuestions = new Array();
+        $.getJSON("{{ url_for('static', filename='jsonfiles/actiontype_statements.json') }}", function (data) {
+                allQuestions = data;
+                if (counter == allQuestions.length) {
+
+                studentnummer = $("#studentnummer").val();
+
+                event.preventDefault();
+                event.stopImmediatePropagation();
+
+                $.ajax({
+                type: "POST",
+                url: "{{url_for('vragenlijst')}}",
+                data: {
+                    'action_type': 'klaar',
+                    'studentnummer': studentnummer
+                },
+                success: function(response) {
+                    $("#bezig").hide();
+                    $("#klaar").show();
+                    $("#code").text("U heeft alle vragen beantwoord uw code is : #"+ response.output);
+                    //console.log(response);
+                },
+                    error: function (jqXHR, exception) {
+                    alert(jqXHR.statusText);
+                }
+                });
+                } else {
+                //console.log(allQuestions[counter].statement_number);
+                    $("#question").text("question = " + allQuestions[counter].statement_number);
+                    $("#optie1").text(allQuestions[counter].statement_choices[0].choice_text);
+                    $("#optie2").text(allQuestions[counter].statement_choices[1].choice_text);
+                    $("#optie1").val(allQuestions[counter].statement_choices[0].choice_result);
+                    $("#optie2").val(allQuestions[counter].statement_choices[1].choice_result);
+                }
+
+                $(".optie").click(function (event){
+                    var value = event.target.value; 
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+
+                    $.ajax({
+                        type: "POST",
+                        url: "{{url_for('vragenlijst')}}",
+                        data: {
+                            'statementnumber': allQuestions[counter].statement_number,
+                            'value': value
+                        },
+                        success: function(response) {
+                            //console.log(response);
+                        },
+                            error: function (jqXHR, exception) {
+                            alert(jqXHR.statusText);
+                        }
+                    });
+                    counter++;
+                    allQuestions = data;
+                    console.log(counter);
+                    console.log(allQuestions.length);
+                    if (counter == allQuestions.length) {
+
+                        studentnummer = $("#studentnummer").val();
+
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+
+                        $.ajax({
+                        type: "POST",
+                        url: "{{url_for('vragenlijst')}}",
+                        data: {
+                            'studentnummer': studentnummer
+                        },
+                        success: function(response) {
+                            location.reload();
+                            //console.log(response);
+                        },
+                            error: function (jqXHR, exception) {
+                            alert(jqXHR.statusText);
+                        }
+                    });
+                    } else {
+                        //console.log(allQuestions[counter].statement_number);
+                        $("#question").text("question = " + allQuestions[counter].statement_number);
+                        $("#optie1").text(allQuestions[counter].statement_choices[0].choice_text);
+                        $("#optie2").text(allQuestions[counter].statement_choices[1].choice_text);
+                        $("#optie1").val(allQuestions[counter].statement_choices[0].choice_result);
+                        $("#optie2").val(allQuestions[counter].statement_choices[1].choice_result);
+                    }
+                });
+            });
+            $("#Opnieuw").click(function (event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                studentnummer = $("#studentnummer").val();
+                $.ajax({
+                    type: "POST",
+                    url: "{{url_for('vragenlijst')}}",
+                    data: {
+                        'action_type': 'opnieuw',	
+                        'studentnummer': studentnummer
+                    },
+                    success: function(response) {
+                        location.reload();
+                    },
+                        error: function (jqXHR, exception) {
+                        alert(jqXHR.statusText);
+                    }
+                });
+            });
+    });
+</script>
+{% endblock %}

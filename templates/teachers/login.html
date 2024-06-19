@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}
+Test-Correct | Home
+{% endblock %}
+{% block content %}
+<header class="bg-primary bg-gradient text-white">
+    <div class="container px-4 text-center">
+        <div class="container px-4">
+                <div class="row gx-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <form id="NewModal" method="POST" name="login">
+                            <p>
+                            <label>Email</label>
+                            <input class="w3-input" type="text" name="Email" placeholder="Email"></p>
+                            <p>
+                            <label>Wachtwoord</label>
+                            <input class="w3-input" type="password" id="Wachtwoord" name="Wachtwoord" placeholder="Wachtwoord"></p>
+                            <p>
+                            <label>Show password</label>
+                            <input class="w3-input" type="checkbox" id="show_password" name="show_password"></p>
+                            <button class=" btn btn-select btn-lg btn-light" id="SaveModal">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+    </div>
+</header>
+<script>
+    $(document).ready(function(){
+        $("#show_password").click(function(){
+            if ($("#show_password").is(":checked")) {
+                $("#Wachtwoord").attr("type", "text");
+            } else {
+                $("#Wachtwoord").attr("type", "password");
+            }
+        });
+        $("#SaveModal").click(function (event) {
+            console.log($('#NewModal').serializeArray());	
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            $.ajax({
+                type: "POST",
+                url: "{{url_for('login')}}",
+                data: $('#NewModal').serializeArray(),
+                success: function(response) {
+                    console.log(response);
+                    if (response.output == true) {
+                        window.location.href = "{{url_for('show_all')}}";
+                    } else {
+                        alert(response.output);
+                    }   
+                },
+                    error: function (jqXHR, exception) {
+                    alert(jqXHR.statusText);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
